@@ -1,4 +1,4 @@
-.gitignore
-target/
+!.gitignore
+*/target/
 .idea/*
 *.class
