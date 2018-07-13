@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZendeskFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test2</a> &gt; <a href="index.source.html" class="el_package">com.mycorp</a> &gt; <span class="el_source">ZendeskFactory.java</span></div><h1>ZendeskFactory.java</h1><pre class="source lang-java linenums">package com.mycorp;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ning.http.client.Realm;
+import com.ning.http.client.Request;
+import com.ning.http.client.RequestBuilder;
+import com.ning.http.client.uri.Uri;
+
+import java.util.regex.Pattern;
+
+public class ZendeskFactory {
+
+<span class="nc" id="L14">    private static final Pattern RESTRICTED_PATTERN = Pattern.compile(&quot;%2B&quot;, Pattern.LITERAL);</span>
+
+<span class="nc" id="L16">    private ZendeskFactory() {</span>
+
+<span class="nc" id="L18">    }</span>
+
+    public static Realm newRealm(final String username, final String password) {
+<span class="nc" id="L21">        return new Realm.RealmBuilder()</span>
+<span class="nc" id="L22">                .setScheme(Realm.AuthScheme.BASIC)</span>
+<span class="nc" id="L23">                .setPrincipal(username)</span>
+<span class="nc" id="L24">                .setPassword(password)</span>
+<span class="nc" id="L25">                .setUsePreemptiveAuth(true)</span>
+<span class="nc" id="L26">                .build();</span>
+    }
+
+    public static byte[] json(final ObjectMapper mapper, final Object object) {
+        try {
+<span class="nc" id="L31">            return mapper.writeValueAsBytes(object);</span>
+<span class="nc" id="L32">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L33">            throw new ZendeskException(e.getMessage(), e);</span>
+        }
+    }
+
+    public static Request req(final Realm realm,
+                              final String oauthToken,
+                              final String method,
+                              final Uri template,
+                              final String contentType,
+                              final byte[] body) {
+<span class="nc" id="L43">        RequestBuilder builder = new RequestBuilder(method);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        if (realm != null) {</span>
+<span class="nc" id="L45">            builder.setRealm(realm);</span>
+        } else {
+<span class="nc" id="L47">            builder.addHeader(&quot;Authorization&quot;, &quot;Bearer &quot; + oauthToken);</span>
+        }
+<span class="nc" id="L49">        builder.setUrl(RESTRICTED_PATTERN.matcher(template.toString()).replaceAll(&quot;+&quot;)); //replace out %2B with + due to API restriction</span>
+<span class="nc" id="L50">        builder.addHeader(&quot;Content-type&quot;, contentType);</span>
+<span class="nc" id="L51">        builder.setBody(body);</span>
+<span class="nc" id="L52">        return builder.build();</span>
+    }
+
+    public static Uri cnst(final String url, final String template) {
+<span class="nc" id="L56">        return Uri.create(url + template);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

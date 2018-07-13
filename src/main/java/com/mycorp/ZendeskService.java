@@ -68,7 +68,6 @@ public class ZendeskService {
 
     /** The portalclientes web ejb remote. */
     @Autowired
-    // @Qualifier("portalclientesWebEJB")
     private PortalClientesWebEJBRemote portalclientesWebEJBRemote;
 
     /** The rest template. */
@@ -203,7 +202,7 @@ public class ZendeskService {
                 parseJsonBravo(datosServicio));
         ticket = ticket.replaceAll("["+ESCAPED_LINE_SEPARATOR+"]", " ");
 
-        try(Zendesk zendesk = new Zendesk.Builder(URL_ZENDESK).setUsername(ZENDESK_USER).setToken(TOKEN_ZENDESK).build()){
+        try(Zendesk zendesk = new ZendeskBuilder(URL_ZENDESK).setUsername(ZENDESK_USER).setToken(TOKEN_ZENDESK).build()){
             //Ticket
             Ticket petiZendesk = mapper.readValue(ticket, Ticket.class);
             zendesk.createTicket(petiZendesk);

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Poliza.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test2</a> &gt; <a href="index.source.html" class="el_package">com.mycorp.support</a> &gt; <span class="el_source">Poliza.java</span></div><h1>Poliza.java</h1><pre class="source lang-java linenums">package com.mycorp.support;
+
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+
+<span class="nc" id="L8">public class Poliza {</span>
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = -7697433318924093934L;
+
+    /** The Constant MAX_ARG. */
+    private static final int MAX_ARG = 3;
+
+    /** The id poliza. */
+    private String idPoliza;
+
+    /** The compania. */
+    private Integer compania;
+
+    /** The num poliza. */
+    private Integer numPoliza;
+
+    /** The num colectivo. */
+    private Integer numColectivo;
+
+    /** The plan info. */
+    private ValueCode planInfo;
+
+    /** The perfil. */
+    private String perfil;
+
+    /** The num tarjeta. */
+    private String numTarjeta;
+
+    /** The desc banco. */
+    private String descBanco;
+
+    /** The mostrar aseg post. */
+    private Boolean mostrarAsegPost;
+
+    /** The reembolso. */
+    private Boolean reembolso;
+
+    /** The copago. */
+    private boolean copago;
+
+    /**
+     * Deserialize.
+     *
+     * @param fieldsList
+     *            the fields list
+     */
+    public final void deserialize( final List&lt; String &gt; fieldsList ) {
+
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if( CollectionUtils.isNotEmpty( fieldsList ) &amp;&amp; fieldsList.size() == MAX_ARG ) {</span>
+<span class="nc" id="L57">            this.compania = NumberUtils.toInt( fieldsList.get( 0 ) );</span>
+<span class="nc" id="L58">            this.numPoliza = NumberUtils.toInt( fieldsList.get( 1 ) );</span>
+<span class="nc" id="L59">            this.numColectivo = NumberUtils.toInt( fieldsList.get( 2 ) );</span>
+        } else {
+<span class="nc" id="L61">            throw new IllegalArgumentException( &quot;El identificador de la Poliza no es correcto&quot; );</span>
+        }
+
+<span class="nc" id="L64">    }</span>
+
+    /**
+     * Gets the id poliza.
+     *
+     * @return the id poliza
+     */
+    public final String getIdPoliza() {
+<span class="nc" id="L72">        return idPoliza;</span>
+    }
+
+    /**
+     * Sets the id poliza.
+     *
+     * @param idPoliza
+     *            the new id poliza
+     */
+    public final void setIdPoliza( String idPoliza ) {
+<span class="nc" id="L82">        this.idPoliza = idPoliza;</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Gets the compania.
+     *
+     * @return the compania
+     */
+    public final Integer getCompania() {
+<span class="nc" id="L91">        return compania;</span>
+    }
+
+    /**
+     * Sets the compania.
+     *
+     * @param compania
+     *            the new compania
+     */
+    public final void setCompania( Integer compania ) {
+<span class="nc" id="L101">        this.compania = compania;</span>
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Gets the num poliza.
+     *
+     * @return the num poliza
+     */
+    public final Integer getNumPoliza() {
+<span class="nc" id="L110">        return numPoliza;</span>
+    }
+
+    /**
+     * Sets the num poliza.
+     *
+     * @param numPoliza
+     *            the new num poliza
+     */
+    public final void setNumPoliza( Integer numPoliza ) {
+<span class="nc" id="L120">        this.numPoliza = numPoliza;</span>
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * Gets the num colectivo.
+     *
+     * @return the num colectivo
+     */
+    public final Integer getNumColectivo() {
+<span class="nc" id="L129">        return numColectivo;</span>
+    }
+
+    /**
+     * Sets the num colectivo.
+     *
+     * @param numColectivo
+     *            the new num colectivo
+     */
+    public final void setNumColectivo( Integer numColectivo ) {
+<span class="nc" id="L139">        this.numColectivo = numColectivo;</span>
+<span class="nc" id="L140">    }</span>
+
+    /**
+     * Gets the plan info.
+     *
+     * @return the plan info
+     */
+    public final ValueCode getPlanInfo() {
+<span class="nc" id="L148">        return planInfo;</span>
+    }
+
+    /**
+     * Sets the plan info.
+     *
+     * @param planInfo
+     *            the new plan info
+     */
+    public final void setPlanInfo( ValueCode planInfo ) {
+<span class="nc" id="L158">        this.planInfo = planInfo;</span>
+<span class="nc" id="L159">    }</span>
+
+    /**
+     * Gets the perfil.
+     *
+     * @return the perfil
+     */
+    public final String getPerfil() {
+<span class="nc" id="L167">        return perfil;</span>
+    }
+
+    /**
+     * Sets the perfil.
+     *
+     * @param perfil
+     *            the new perfil
+     */
+    public final void setPerfil( String perfil ) {
+<span class="nc" id="L177">        this.perfil = perfil;</span>
+<span class="nc" id="L178">    }</span>
+
+    /**
+     * Gets the num tarjeta.
+     *
+     * @return the num tarjeta
+     */
+    public final String getNumTarjeta() {
+<span class="nc" id="L186">        return numTarjeta;</span>
+    }
+
+    /**
+     * Sets the num tarjeta.
+     *
+     * @param numTarjeta
+     *            the new num tarjeta
+     */
+    public final void setNumTarjeta( String numTarjeta ) {
+<span class="nc" id="L196">        this.numTarjeta = numTarjeta;</span>
+<span class="nc" id="L197">    }</span>
+
+    /**
+     * Gets the desc banco.
+     *
+     * @return the desc banco
+     */
+    public final String getDescBanco() {
+<span class="nc" id="L205">        return descBanco;</span>
+    }
+
+    /**
+     * Sets the desc banco.
+     *
+     * @param descBanco
+     *            the new desc banco
+     */
+    public final void setDescBanco( String descBanco ) {
+<span class="nc" id="L215">        this.descBanco = descBanco;</span>
+<span class="nc" id="L216">    }</span>
+
+    /**
+     * Gets the mostrar aseg post.
+     *
+     * @return the mostrar aseg post
+     */
+    public final Boolean getMostrarAsegPost() {
+<span class="nc" id="L224">        return mostrarAsegPost;</span>
+    }
+
+    /**
+     * Sets the mostrar aseg post.
+     *
+     * @param mostrarAsegPost
+     *            the new mostrar aseg post
+     */
+    public final void setMostrarAsegPost( Boolean mostrarAsegPost ) {
+<span class="nc" id="L234">        this.mostrarAsegPost = mostrarAsegPost;</span>
+<span class="nc" id="L235">    }</span>
+
+    /**
+     * Gets the reembolso.
+     *
+     * @return the reembolso
+     */
+    public final Boolean getReembolso() {
+<span class="nc" id="L243">        return reembolso;</span>
+    }
+
+    /**
+     * Sets the reembolso.
+     *
+     * @param reembolso
+     *            the new reembolso
+     */
+    public final void setReembolso( Boolean reembolso ) {
+<span class="nc" id="L253">        this.reembolso = reembolso;</span>
+<span class="nc" id="L254">    }</span>
+
+    /**
+     * @return the copago
+     */
+    public boolean isCopago() {
+<span class="nc" id="L260">        return this.copago;</span>
+    }
+
+    /**
+     * @param copago the copago to set
+     */
+    public void setCopago( boolean copago ) {
+<span class="nc" id="L267">        this.copago = copago;</span>
+<span class="nc" id="L268">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

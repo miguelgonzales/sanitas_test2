@@ -1,8 +1,10 @@
 com/mycorp/support/PolizaBasicoFromPolizaBuilder.class
-com/mycorp/Zendesk$1.class
+com/mycorp/ZendeskAsyncCompletionHandler.class
+com/mycorp/BasicAsyncCompletionHandler.class
 com/mycorp/support/FicheroAdjunto.class
-com/mycorp/Zendesk$BasicAsyncCompletionHandler.class
+com/mycorp/ZendeskUtils.class
 com/mycorp/ZendeskService.class
+com/mycorp/ZendeskFactory.class
 com/mycorp/support/Ticket.class
 com/mycorp/Zendesk.class
 com/mycorp/support/DatosCliente.class
@@ -11,6 +13,7 @@ com/mycorp/support/ValueCode.class
 com/mycorp/support/DatosEnvioMail.class
 com/mycorp/ZendeskException.class
 com/mycorp/support/CorreoElectronico.class
+com/mycorp/ZendeskBuilder.class
 com/mycorp/support/Poliza.class
-com/mycorp/Zendesk$Builder.class
-com/mycorp/Zendesk$ZendeskAsyncCompletionHandler.class
+com/mycorp/ZendeskHelper.class
+com/mycorp/ZendeskLogger.class

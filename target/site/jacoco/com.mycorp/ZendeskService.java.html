@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZendeskService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test2</a> &gt; <a href="index.source.html" class="el_package">com.mycorp</a> &gt; <span class="el_source">ZendeskService.java</span></div><h1>ZendeskService.java</h1><pre class="source lang-java linenums">package com.mycorp;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.mycorp.support.CorreoElectronico;
+import com.mycorp.support.DatosCliente;
+import com.mycorp.support.MensajeriaService;
+import com.mycorp.support.Poliza;
+import com.mycorp.support.PolizaBasicoFromPolizaBuilder;
+import com.mycorp.support.Ticket;
+import com.mycorp.support.ValueCode;
+
+import portalclientesweb.ejb.interfaces.PortalClientesWebEJBRemote;
+import util.datos.PolizaBasico;
+import util.datos.UsuarioAlta;
+
+@Service
+<span class="nc" id="L34">public class ZendeskService {</span>
+
+    /** The Constant LOG. */
+<span class="nc" id="L37">    private static final Logger LOG = LoggerFactory.getLogger( ZendeskService.class );</span>
+
+    private static final String ESCAPED_LINE_SEPARATOR = &quot;\\n&quot;;
+    private static final String ESCAPE_ER = &quot;\\&quot;;
+    private static final String HTML_BR = &quot;&lt;br/&gt;&quot;;
+<span class="nc" id="L42">    @Value(&quot;#{envPC['zendesk.ticket']}&quot;)</span>
+    public String PETICION_ZENDESK= &quot;&quot;;
+
+<span class="nc" id="L45">    @Value(&quot;#{envPC['zendesk.token']}&quot;)</span>
+    public String TOKEN_ZENDESK= &quot;&quot;;
+
+<span class="nc" id="L48">    @Value(&quot;#{envPC['zendesk.url']}&quot;)</span>
+    public String URL_ZENDESK= &quot;&quot;;
+
+<span class="nc" id="L51">    @Value(&quot;#{envPC['zendesk.user']}&quot;)</span>
+    public String ZENDESK_USER= &quot;&quot;;
+
+<span class="nc" id="L54">    @Value(&quot;#{envPC['tarjetas.getDatos']}&quot;)</span>
+    public String TARJETAS_GETDATOS = &quot;&quot;;
+
+<span class="nc" id="L57">    @Value(&quot;#{envPC['cliente.getDatos']}&quot;)</span>
+    public String CLIENTE_GETDATOS = &quot;&quot;;
+
+<span class="nc" id="L60">    @Value(&quot;#{envPC['zendesk.error.mail.funcionalidad']}&quot;)</span>
+    public String ZENDESK_ERROR_MAIL_FUNCIONALIDAD = &quot;&quot;;
+
+<span class="nc" id="L63">    @Value(&quot;#{envPC['zendesk.error.destinatario']}&quot;)</span>
+    public String ZENDESK_ERROR_DESTINATARIO = &quot;&quot;;
+
+<span class="nc" id="L66">    private SimpleDateFormat formatter = new SimpleDateFormat(&quot;dd/MM/yyyy&quot;);</span>
+
+
+    /** The portalclientes web ejb remote. */
+    @Autowired
+    private PortalClientesWebEJBRemote portalclientesWebEJBRemote;
+
+    /** The rest template. */
+    @Autowired
+    @Qualifier(&quot;restTemplateUTF8&quot;)
+    private RestTemplate restTemplate;
+
+    @Autowired
+    @Qualifier( &quot;emailService&quot; )
+    MensajeriaService emailService;
+
+    /**
+     * Crea un ticket en Zendesk. Si se ha informado el nÂº de tarjeta, obtiene los datos asociados a dicha tarjeta de un servicio externo.
+     * @param usuarioAlta
+     * @param userAgent
+     */
+    public String altaTicketZendesk(UsuarioAlta usuarioAlta, String userAgent){
+
+<span class="nc" id="L89">        ObjectMapper mapper = new ObjectMapper();</span>
+<span class="nc" id="L90">        mapper.enable(SerializationFeature.INDENT_OUTPUT);</span>
+
+<span class="nc" id="L92">        StringBuilder datosUsuario = new StringBuilder();</span>
+<span class="nc" id="L93">        StringBuilder datosBravo = new StringBuilder();</span>
+
+<span class="nc" id="L95">        String idCliente = null;</span>
+
+<span class="nc" id="L97">        StringBuilder clientName = new StringBuilder();</span>
+
+
+        // AÃ±ade los datos del formulario
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if(StringUtils.isNotBlank(usuarioAlta.getNumPoliza())){</span>
+<span class="nc" id="L102">            datosUsuario.append(&quot;NÂº de poliza/colectivo: &quot;).append(usuarioAlta.getNumPoliza()).append(&quot;/&quot;).append(usuarioAlta.getNumDocAcreditativo()).append(ESCAPED_LINE_SEPARATOR);</span>
+        }else{
+<span class="nc" id="L104">            datosUsuario.append(&quot;NÂº tarjeta Sanitas o Identificador: &quot;).append(usuarioAlta.getNumTarjeta()).append(ESCAPED_LINE_SEPARATOR);</span>
+        }
+<span class="nc" id="L106">        datosUsuario.append(&quot;Tipo documento: &quot;).append(usuarioAlta.getTipoDocAcreditativo()).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L107">        datosUsuario.append(&quot;NÂº documento: &quot;).append(usuarioAlta.getNumDocAcreditativo()).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L108">        datosUsuario.append(&quot;Email personal: &quot;).append(usuarioAlta.getEmail()).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L109">        datosUsuario.append(&quot;NÂº mÃ³vil: &quot;).append(usuarioAlta.getNumeroTelefono()).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L110">        datosUsuario.append(&quot;User Agent: &quot;).append(userAgent).append(ESCAPED_LINE_SEPARATOR);</span>
+
+<span class="nc" id="L112">        datosBravo.append(ESCAPED_LINE_SEPARATOR + &quot;Datos recuperados de BRAVO:&quot; + ESCAPED_LINE_SEPARATOR + ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L113">        StringBuilder datosServicio = new StringBuilder();</span>
+        // Obtiene el idCliente de la tarjeta
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if(StringUtils.isNotBlank(usuarioAlta.getNumTarjeta())){</span>
+            try{
+<span class="nc" id="L117">                String urlToRead = TARJETAS_GETDATOS + usuarioAlta.getNumTarjeta();</span>
+<span class="nc" id="L118">                ResponseEntity&lt;String&gt; res = restTemplate.getForEntity( urlToRead, String.class);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                if(res.getStatusCode() == HttpStatus.OK){</span>
+<span class="nc" id="L120">                    String dusuario = res.getBody();</span>
+<span class="nc" id="L121">                    clientName.append(dusuario);</span>
+<span class="nc" id="L122">                    idCliente = dusuario;</span>
+<span class="nc" id="L123">                    datosServicio.append(&quot;Datos recuperados del servicio de tarjeta:&quot;).append(ESCAPED_LINE_SEPARATOR).append(mapper.writeValueAsString(dusuario));</span>
+                }
+<span class="nc" id="L125">            }catch(Exception e)</span>
+            {
+<span class="nc" id="L127">                LOG.error(&quot;Error al obtener los datos de la tarjeta&quot;, e);</span>
+<span class="nc" id="L128">            }</span>
+        }
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        else if(StringUtils.isNotBlank(usuarioAlta.getNumPoliza())){</span>
+            try
+            {
+<span class="nc" id="L133">                Poliza poliza = new Poliza();</span>
+<span class="nc" id="L134">                poliza.setNumPoliza(Integer.valueOf(usuarioAlta.getNumPoliza()));</span>
+<span class="nc" id="L135">                poliza.setNumColectivo(Integer.valueOf(usuarioAlta.getNumDocAcreditativo()));</span>
+<span class="nc" id="L136">                poliza.setCompania(1);</span>
+
+<span class="nc" id="L138">                PolizaBasico polizaBasicoConsulta = new PolizaBasicoFromPolizaBuilder().withPoliza( poliza ).build();</span>
+
+<span class="nc" id="L140">                final util.datos.DetallePoliza detallePolizaResponse = portalclientesWebEJBRemote.recuperarDatosPoliza(polizaBasicoConsulta);</span>
+
+<span class="nc" id="L142">                clientName.append(detallePolizaResponse.getTomador().getNombre()).</span>
+<span class="nc" id="L143">                            append(&quot; &quot;).</span>
+<span class="nc" id="L144">                            append(detallePolizaResponse.getTomador().getApellido1()).</span>
+<span class="nc" id="L145">                            append(&quot; &quot;).</span>
+<span class="nc" id="L146">                            append(detallePolizaResponse.getTomador().getApellido2());</span>
+
+<span class="nc" id="L148">                idCliente = detallePolizaResponse.getTomador().getIdentificador();</span>
+<span class="nc" id="L149">                datosServicio.append(&quot;Datos recuperados del servicio de tarjeta:&quot;).append(ESCAPED_LINE_SEPARATOR).append(mapper.writeValueAsString(detallePolizaResponse));</span>
+<span class="nc" id="L150">            }catch(Exception e)</span>
+            {
+<span class="nc" id="L152">                LOG.error(&quot;Error al obtener los datos de la poliza&quot;, e);</span>
+<span class="nc" id="L153">            }</span>
+        }
+
+        try
+        {
+            // Obtenemos los datos del cliente
+<span class="nc" id="L159">            DatosCliente cliente = restTemplate.getForObject(&quot;http://localhost:8080/test-endpoint&quot;, DatosCliente.class, idCliente);</span>
+
+<span class="nc" id="L161">            datosBravo.append(&quot;TelÃ©fono: &quot;).append(cliente.getGenTGrupoTmk()).append(ESCAPED_LINE_SEPARATOR);</span>
+
+
+<span class="nc" id="L164">            datosBravo.append(&quot;Feha de nacimiento: &quot;).append(formatter.format(formatter.parse(cliente.getFechaNacimiento()))).append(ESCAPED_LINE_SEPARATOR);</span>
+
+<span class="nc" id="L166">            List&lt; ValueCode &gt; tiposDocumentos = getTiposDocumentosRegistro();</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">            for(int i = 0; i &lt; tiposDocumentos.size();i++)</span>
+            {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                if(tiposDocumentos.get(i).getCode().equals(cliente.getGenCTipoDocumento().toString()))</span>
+                {
+<span class="nc" id="L171">                    datosBravo.append(&quot;Tipo de documento: &quot;).append(tiposDocumentos.get(i).getValue()).append(ESCAPED_LINE_SEPARATOR);</span>
+                }
+            }
+<span class="nc" id="L174">            datosBravo.append(&quot;NÃºmero documento: &quot;).append(cliente.getNumeroDocAcred()).append(ESCAPED_LINE_SEPARATOR);</span>
+
+<span class="nc" id="L176">            datosBravo.append(&quot;Tipo cliente: &quot;);</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">            switch (cliente.getGenTTipoCliente()) {</span>
+            case 1:
+<span class="nc" id="L179">                datosBravo.append(&quot;POTENCIAL&quot;).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L180">                break;</span>
+            case 2:
+<span class="nc" id="L182">                datosBravo.append(&quot;REAL&quot;).append(ESCAPED_LINE_SEPARATOR);</span>
+<span class="nc" id="L183">                break;</span>
+            case 3:
+<span class="nc" id="L185">                datosBravo.append(&quot;PROSPECTO&quot;).append(ESCAPED_LINE_SEPARATOR);</span>
+                break;
+            }
+
+<span class="nc" id="L189">            datosBravo.append(&quot;ID estado del cliente: &quot;).append(cliente.getGenTStatus()).append(ESCAPED_LINE_SEPARATOR);</span>
+
+<span class="nc" id="L191">            datosBravo.append(&quot;ID motivo de alta cliente: &quot;).append(cliente.getIdMotivoAlta()).append(ESCAPED_LINE_SEPARATOR);</span>
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            datosBravo.append(&quot;Registrado: &quot;).append((cliente.getfInactivoWeb() == null ? &quot;SÃ­&quot; : &quot;No&quot;)).append(ESCAPED_LINE_SEPARATOR + ESCAPED_LINE_SEPARATOR);</span>
+
+
+<span class="nc" id="L196">        }catch(Exception e)</span>
+        {
+<span class="nc" id="L198">            LOG.error(&quot;Error al obtener los datos en BRAVO del cliente&quot;, e);</span>
+<span class="nc" id="L199">        }</span>
+
+<span class="nc" id="L201">        String ticket = String.format(PETICION_ZENDESK, clientName.toString(), usuarioAlta.getEmail(), datosUsuario.toString()+datosBravo.toString()+</span>
+<span class="nc" id="L202">                parseJsonBravo(datosServicio));</span>
+<span class="nc" id="L203">        ticket = ticket.replaceAll(&quot;[&quot;+ESCAPED_LINE_SEPARATOR+&quot;]&quot;, &quot; &quot;);</span>
+
+<span class="nc" id="L205">        try(Zendesk zendesk = new ZendeskBuilder(URL_ZENDESK).setUsername(ZENDESK_USER).setToken(TOKEN_ZENDESK).build()){</span>
+            //Ticket
+<span class="nc" id="L207">            Ticket petiZendesk = mapper.readValue(ticket, Ticket.class);</span>
+<span class="nc" id="L208">            zendesk.createTicket(petiZendesk);</span>
+
+<span class="nc bnc" id="L210" title="All 8 branches missed.">        }catch(Exception e){</span>
+<span class="nc" id="L211">            LOG.error(&quot;Error al crear ticket ZENDESK&quot;, e);</span>
+            // Send email
+
+<span class="nc" id="L214">            CorreoElectronico correo = new CorreoElectronico( Long.parseLong(ZENDESK_ERROR_MAIL_FUNCIONALIDAD), &quot;es&quot; )</span>
+<span class="nc" id="L215">                    .addParam(datosUsuario.toString().replaceAll(ESCAPE_ER+ESCAPED_LINE_SEPARATOR, HTML_BR))</span>
+<span class="nc" id="L216">                    .addParam(datosBravo.toString().replaceAll(ESCAPE_ER+ESCAPED_LINE_SEPARATOR, HTML_BR));</span>
+<span class="nc" id="L217">            correo.setEmailA( ZENDESK_ERROR_DESTINATARIO );</span>
+            try
+            {
+<span class="nc" id="L220">                emailService.enviar( correo );</span>
+<span class="nc" id="L221">            }catch(Exception ex){</span>
+<span class="nc" id="L222">                LOG.error(&quot;Error al enviar mail&quot;, ex);</span>
+<span class="nc" id="L223">            }</span>
+
+<span class="nc" id="L225">        }</span>
+
+<span class="nc" id="L227">        datosUsuario.append(datosBravo);</span>
+
+<span class="nc" id="L229">        return datosUsuario.toString();</span>
+    }
+
+    public List&lt; ValueCode &gt; getTiposDocumentosRegistro() {
+<span class="nc" id="L233">        return Arrays.asList( new ValueCode(), new ValueCode() ); // simulacion servicio externo</span>
+    }
+
+    /**
+     * MÃ©todo para parsear el JSON de respuesta de los servicios de tarjeta/pÃ³liza
+     *
+     * @param resBravo
+     * @return
+     */
+    private String parseJsonBravo(StringBuilder resBravo)
+    {
+<span class="nc" id="L244">        return resBravo.toString().replaceAll(&quot;[\\[\\]\\{\\}\\\&quot;\\r]&quot;, &quot;&quot;).replaceAll(ESCAPED_LINE_SEPARATOR, ESCAPE_ER + ESCAPED_LINE_SEPARATOR);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

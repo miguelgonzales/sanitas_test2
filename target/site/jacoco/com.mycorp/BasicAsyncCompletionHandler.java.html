@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BasicAsyncCompletionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test2</a> &gt; <a href="index.source.html" class="el_package">com.mycorp</a> &gt; <span class="el_source">BasicAsyncCompletionHandler.java</span></div><h1>BasicAsyncCompletionHandler.java</h1><pre class="source lang-java linenums">package com.mycorp;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ning.http.client.Response;
+import org.slf4j.Logger;
+
+import static com.mycorp.ZendeskLogger.logResponse;
+import static com.mycorp.ZendeskUtils.isStatus2xx;
+
+public final class BasicAsyncCompletionHandler&lt;T&gt; extends ZendeskAsyncCompletionHandler&lt;T&gt; {
+    private final Class&lt;T&gt; clazz;
+    private final String name;
+    private final Class[] typeParams;
+    private final Logger logger;
+    private final ObjectMapper mapper;
+
+    public BasicAsyncCompletionHandler(final Logger logger,
+                                       final ObjectMapper mapper,
+                                       final Class clazz,
+                                       final String name,
+<span class="nc" id="L22">                                       final Class... typeParams) {</span>
+<span class="nc" id="L23">        this.clazz = clazz;</span>
+<span class="nc" id="L24">        this.name = name;</span>
+<span class="nc" id="L25">        this.typeParams = typeParams;</span>
+<span class="nc" id="L26">        this.logger = logger;</span>
+<span class="nc" id="L27">        this.mapper = mapper;</span>
+<span class="nc" id="L28">    }</span>
+
+    @Override
+    public T onCompleted(Response response) throws Exception {
+<span class="nc" id="L32">        logResponse(this.logger, response);</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (isStatus2xx(response)) {</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (typeParams.length &gt; 0) {</span>
+<span class="nc" id="L35">                JavaType type = mapper.getTypeFactory().constructParametricType(clazz, typeParams);</span>
+<span class="nc" id="L36">                return mapper.convertValue(mapper.readTree(response.getResponseBodyAsStream()).get(name), type);</span>
+            }
+<span class="nc" id="L38">            return mapper.convertValue(mapper.readTree(response.getResponseBodyAsStream()).get(name), clazz);</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        } else if (isRateLimitResponse(response)) {</span>
+<span class="nc" id="L40">            throw new ZendeskException(response.toString());</span>
+        }
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (response.getStatusCode() == 404) {</span>
+<span class="nc" id="L43">            return null;</span>
+        }
+<span class="nc" id="L45">        throw new ZendeskException(response.toString());</span>
+    }
+
+    private boolean isRateLimitResponse(Response response) {
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        return response.getStatusCode() == 429;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Zendesk.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test2</a> &gt; <a href="index.source.html" class="el_package">com.mycorp</a> &gt; <span class="el_source">Zendesk.java</span></div><h1>Zendesk.java</h1><pre class="source lang-java linenums">package com.mycorp;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mycorp.support.Ticket;
+import com.ning.http.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.util.Collections;
+
+import static com.mycorp.ZendeskFactory.*;
+import static com.mycorp.ZendeskHelper.complete;
+import static com.mycorp.ZendeskLogger.submit;
+import static com.mycorp.ZendeskUtils.createMapper;
+
+public class Zendesk implements Closeable {
+    private static final String JSON = &quot;application/json; charset=UTF-8&quot;;
+    private final boolean closeClient;
+    private final AsyncHttpClient client;
+    private final Realm realm;
+    private final String url;
+    private final String oauthToken;
+    private final ObjectMapper mapper;
+    private final Logger logger;
+<span class="nc" id="L26">    private boolean closed = false;</span>
+
+
+<span class="nc" id="L29">    protected Zendesk(AsyncHttpClient client, String url, String username, String password) {</span>
+<span class="nc" id="L30">        this.logger = LoggerFactory.getLogger(Zendesk.class);</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        this.closeClient = client == null;</span>
+<span class="nc" id="L32">        this.oauthToken = null;</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        this.client = client == null ? new AsyncHttpClient() : client;</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        this.url = url.endsWith(&quot;/&quot;) ? url + &quot;api/v2&quot; : url + &quot;/api/v2&quot;;</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        if (username != null) {</span>
+<span class="nc" id="L36">            this.realm = newRealm(username, password);</span>
+        } else {
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (password != null) {</span>
+<span class="nc" id="L39">                throw new IllegalStateException(&quot;Cannot specify token or password without specifying username&quot;);</span>
+            }
+<span class="nc" id="L41">            this.realm = null;</span>
+        }
+<span class="nc" id="L43">        this.mapper = createMapper();</span>
+<span class="nc" id="L44">    }</span>
+
+    public Ticket createTicket(Ticket ticket) {
+<span class="nc" id="L47">        return complete(</span>
+<span class="nc" id="L48">                    submit(</span>
+                        this.logger,
+                        this.client,
+<span class="nc" id="L51">                        req(this.realm,</span>
+                            this.oauthToken,
+                            &quot;POST&quot;,
+<span class="nc" id="L54">                            cnst(this.url, &quot;/tickets.json&quot;),</span>
+                            JSON,
+<span class="nc" id="L56">                            json(this.mapper, Collections.singletonMap(&quot;ticket&quot;, ticket))),</span>
+<span class="nc" id="L57">                        handle(Ticket.class, &quot;ticket&quot;)));</span>
+    }
+
+  protected &lt;T&gt; ZendeskAsyncCompletionHandler&lt;T&gt; handle(final Class&lt;T&gt; clazz, final String name, final Class... typeParams) {
+<span class="nc" id="L61">        return new BasicAsyncCompletionHandler&lt;T&gt;(this.logger, this.mapper, clazz, name, typeParams);</span>
+    }
+
+    public void close() {
+<span class="nc bnc" id="L65" title="All 4 branches missed.">        if (closeClient &amp;&amp; !client.isClosed()) {</span>
+<span class="nc" id="L66">            client.close();</span>
+        }
+<span class="nc" id="L68">        closed = true;</span>
+<span class="nc" id="L69">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
